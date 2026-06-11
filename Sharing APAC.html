@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How I Built an AI B2B Market Intelligence Skill - Hong Thom Do</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#0B192C',
+                            darkBlue: '#1E3E62',
+                            gold: '#F1C40F',
+                            orange: '#FF6B6B',
+                            teal: '#10B981',
+                            accent: '#F39C12',
+                            bgLight: '#F8FAFC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            scroll-behavior: smooth;
+            background-color: #F8FAFC;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        /* Slide Deck Transitions */
+        .slide {
+            display: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .slide.active {
+            display: flex;
+        }
+        /* Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-dark {
+            background: rgba(11, 25, 44, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Timeline styling */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: #CBD5E1;
+            transform: translateX(-50%);
+        }
+        @media (max-width: 768px) {
+            .timeline-line::before {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="font-sans text-slate-800 antialiased overflow-x-hidden">
+
+    <!-- TOP GLOBAL BAR -->
+    <header class="bg-brand-navy text-white py-3 px-6 sticky top-0 z-50 shadow-md border-b border-brand-darkBlue/50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-brand-orange to-brand-gold p-2 rounded-lg text-brand-navy font-bold text-lg shadow">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <span class="font-bold tracking-wider text-sm text-brand-gold block">ALIBABA.COM VIETNAM</span>
+                    <span class="text-xs text-slate-300">B2B Market Intelligence AI Automation Project</span>
+                </div>
+            </div>
+            
+            <!-- Quick Navigation / Global Actions -->
+            <div class="flex items-center gap-4 flex-wrap">
+                <!-- Mode Switcher Toggle Button -->
+               
+                
+                <div class="h-6 w-px bg-slate-600 hidden md:block"></div>
+                
+                <!-- Presenter Badge -->
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-brand-darkBlue border border-brand-gold flex items-center justify-center text-xs font-bold text-brand-gold">
+                        AD
+                    </div>
+                    <div class="text-left">
+                        <span class="text-xs font-semibold block text-white">Hong Thom (Amy) Do</span>
+                        <span class="text-[10px] text-slate-300 block">Job Code: 461502</span>
+						<span class="text-[10px] text-slate-300 block">Dingtalk ID: hongthomdo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MODE 1: EXECUTIVE DASHBOARD VIEW (SMOOTH SCROLL PORTAL) -->
+    <main id="dashboardView" class="block">
+        
+        <!-- HERO HERO HERO -->
+        <section class="relative bg-gradient-to-b from-brand-navy via-[#112240] to-brand-darkBlue text-white pt-20 pb-24 overflow-hidden">
+            <!-- Background Decorative SVGs -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
+            </div>
+            <div class="absolute top-20 right-0 w-96 h-96 bg-brand-gold/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 left-0 w-80 h-80 bg-brand-orange/10 rounded-full blur-3xl"></div>
+
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-8 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-darkBlue border border-brand-gold/30 rounded-full text-brand-gold text-xs font-semibold uppercase tracking-wider animate-pulse">
+                            <span class="w-2 h-2 rounded-full bg-brand-teal"></span> Innovation Case Study
+                        </div>
+                        <h1 class="font-serif text-4xl md:text-5xl lg:text-6xl text-white leading-tight font-bold">
+                            How I Built an <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-orange">AI Skill</span> to Generate Professional Market Newsign Reports HTML
+                        </h1>
+                        <p class="text-lg text-slate-300 max-w-3xl leading-relaxed">
+                            Embracing Accio & AI Agents to completely automate enterprise-grade sourcing analysis with zero programming knowledge.
+                        </p>
+                        
+                        <!-- Mini Profile Card -->
+                        <div class="pt-4 flex flex-wrap gap-4">
+                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3 backdrop-blur-sm">
+                                <i class="fa-solid fa-user-tie text-brand-gold text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-white">Hong Thom (Amy) Do</h4>
+                                    <p class="text-xs text-slate-400">Sales Specialist | Alibaba.com VN</p>
+                                </div>
+                            </div>
+                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-3 backdrop-blur-sm">
+                                <i class="fa-solid fa-envelope text-brand-orange text-2xl"></i>
+                                <div>
+                                    <h4 class="font-bold text-sm text-white">Contact & Connect</h4>
+                                    <p class="text-xs text-slate-400">hongthom.do@alibaba-inc.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI Panel -->
+                    <div class="lg:col-span-4 bg-brand-navy/60 border border-white/10 rounded-2xl p-6 backdrop-blur-md shadow-2xl space-y-6">
+                        <h3 class="text-brand-gold font-bold text-sm uppercase tracking-wider border-b border-white/10 pb-3">
+                            <i class="fa-solid fa-chart-line mr-2"></i> Performance Benchmarks
+                        </h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
+                                <span class="text-3xl font-extrabold text-brand-gold block">~10</span>
+                                <span class="text-xs text-slate-400">Minutes Exec Time</span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
+                                <span class="text-3xl font-extrabold text-brand-orange block">95%+</span>
+                                <span class="text-xs text-slate-400">Time Saved</span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
+                                <span class="text-3xl font-extrabold text-brand-teal block">30-50</span>
+                                <span class="text-xs text-slate-400">Credits/Report</span>
+                            </div>
+                            <div class="bg-white/5 rounded-xl p-4 border border-white/5 text-center">
+                                <span class="text-3xl font-extrabold text-white block">100%</span>
+                                <span class="text-xs text-slate-400">Code-Free AI Code</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-brand-darkBlue/80 border border-brand-accent/20 rounded-xl p-4 text-center">
+                            <p class="text-xs text-brand-gold font-semibold">
+                                <i class="fa-solid fa-quote-left mr-1"></i> I am not a programmer. I do not have an IT background. This was built through collaboration with AI. <i class="fa-solid fa-quote-right ml-1"></i>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTAL NAV STATS -->
+        <div class="bg-white border-b border-slate-200 sticky top-[65px] z-40 shadow-sm hidden md:block">
+            <div class="max-w-7xl mx-auto px-6">
+                <nav class="flex gap-8">
+                    <a href="#about-me" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">About Presenter</a>
+                    <a href="#the-problem" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">The Problem</a>
+                    <a href="#phase-1" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">Phase 1: Industry Report</a>
+                    <a href="#phase-2" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">Phase 2: HTML Integration</a>
+                    <a href="#phase-3" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">Phase 3: Accio Skill</a>
+ 
+                    <a href="#key-lessons" class="py-4 border-b-2 border-transparent text-slate-600 hover:text-brand-darkBlue font-medium text-sm transition-all">Key Takeaways</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- MAIN CONTAINER -->
+        <div class="max-w-7xl mx-auto px-6 py-12 space-y-16">
+
+            <!-- PROFILE AND MISSION SECTION -->
+            <section id="about-me" class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch scroll-mt-28">
+                <div class="bg-gradient-to-br from-brand-darkBlue to-brand-navy rounded-2xl p-8 text-white shadow-lg flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full bg-brand-gold/10 border-2 border-brand-gold flex items-center justify-center text-2xl font-bold text-brand-gold shadow">
+                                HT
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-white">Hong Thom (Amy) Do</h3>
+                                <p class="text-xs text-brand-gold font-medium">Sales Specialist | Alibaba.com VN</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3 pt-4 border-t border-white/10 text-sm text-slate-300">
+                            <p><i class="fa-solid fa-graduation-cap text-brand-gold w-6"></i> Background: Economics & Int'l Trade</p>
+                            <p><i class="fa-solid fa-laptop-code text-brand-orange w-6"></i> Profile: Alibaba.com Vietnam Direct Sales</p>
+                            <p><i class="fa-solid fa-envelope text-brand-teal w-6"></i> Email: hongthom.do@alibaba-inc.com</p>
+                            <p><i class="fa-solid fa-message text-brand-accent w-6"></i> DingTalk: hongthomdo</p>
+                        </div>
+                    </div>
+                    <div class="pt-6">
+                        <div class="bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-slate-400 italic">
+                            "Although my background is in Economics and Trade, I have always searched for tech efficiencies to revolutionize daily operations."
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-slate-200/80 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-semibold text-brand-darkBlue uppercase tracking-wider flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-brand-teal"></span> My AI Innovation Vision
+                        </h3>
+                        <h2 class="text-2xl font-bold font-serif text-brand-navy">
+                            Leveraging Accio AI to Redefine B2B Sales Enablement
+                        </h2>
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            Traditionally, a B2B sales rep spends critical, labor-intensive hours building market intelligence reports before client meetings. By collaborating with AI agents, I transformed a manual, inconsistent process into a production-grade, highly engaging B2B tool.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                            <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 flex gap-3">
+                                <div class="text-brand-orange text-lg pt-1"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">Standardized Workflows</h4>
+                                    <p class="text-xs text-slate-500">Ensure structured, accurate data for any industry.</p>
+                                </div>
+                            </div>
+                            <div class="border border-slate-100 bg-slate-50/50 rounded-xl p-4 flex gap-3">
+                                <div class="text-brand-teal text-lg pt-1"><i class="fa-solid fa-globe"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-sm text-slate-800">Global Scaling</h4>
+                                    <p class="text-xs text-slate-500">Instant multi-language support (EN, VN, CN).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Highlight Insight Card -->
+                    <div class="mt-6 bg-brand-bgLight border-l-4 border-brand-accent p-4 rounded-r-xl">
+                        <div class="flex items-start gap-3">
+                            <div class="text-brand-accent mt-0.5"><i class="fa-solid fa-lightbulb"></i></div>
+                            <div>
+                                <span class="text-xs font-bold text-brand-navy uppercase block">Core Philosophy</span>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                    Modern AI is not just for engineers. With a clear goal and a step-by-step approach, anyone can build useful digital products.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- THE ORIGINAL PROBLEM (PAIN POINTS) -->
+            <section id="the-problem" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 scroll-mt-28">
+                <div class="max-w-3xl mb-8 space-y-2">
+                    <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">The Challenge</span>
+                    <h2 class="text-3xl font-bold font-serif text-brand-navy">How Sales Teams Traditionally Prepared for Customer Meetings?</h2>
+                    <p class="text-slate-500 text-sm">
+                        Preparing manual market reports for customers before meetings was highly inefficient and lacked consistent quality. It takes times especially for new sale specialist.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <!-- Left: Traditional Process and Issues -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="relative pl-6 border-l-2 border-brand-orange/30 space-y-6">
+                            
+                            <!-- Step 1 -->
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-orange text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md">1</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Manual Keyword Searching & Filtering</h4>
+                                <p class="text-xs text-slate-500 mt-1">Sifting manually through millions of Alibaba listings, guessing key buyer search queries, and capturing raw product trends.</p>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-orange text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md">2</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Reviewing Top Suppliers & RFQs</h4>
+                                <p class="text-xs text-slate-500 mt-1">Checking individual company profiles, certifications (BSCI, GRS), and scraping recent RFQ data for buyer intent signals.</p>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-orange text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md">3</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Pricing Benchmark Consolidation</h4>
+                                <p class="text-xs text-slate-500 mt-1">Struggling with multi-tier pricing structures, FOB rates, and MOQ standards, then hand-formatting tables.</p>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-orange text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow-md">4</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Manual PowerPoint Slide Structuring</h4>
+                                <p class="text-xs text-slate-500 mt-1">Spending hours copying and pasting unstructured facts into slides, resulting in static and visually flat reports.</p>
+                            </div>
+                        </div>
+
+                        <!-- Highlights of Traditional Challenges -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                            <div class="bg-red-50 text-red-800 rounded-xl p-4 flex gap-3 border border-red-100/50">
+                                <i class="fa-solid fa-triangle-exclamation text-brand-orange text-lg"></i>
+                                <div>
+                                    <h4 class="font-semibold text-xs">High Inconsistency</h4>
+                                    <p class="text-[11px] text-red-600 mt-1">Different representatives produced varying reports, leading to inconsistent client presentations.</p>
+                                </div>
+                            </div>
+                            <div class="bg-red-50 text-red-800 rounded-xl p-4 flex gap-3 border border-red-100/50">
+                                <i class="fa-solid fa-hourglass-half text-brand-orange text-lg"></i>
+                                <div>
+                                    <h4 class="font-semibold text-xs">Time Drain</h4>
+                                    <p class="text-[11px] text-red-600 mt-1">Required 1 to 2 hours of manual work per customer meeting.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Visual Comparison Chart -->
+                    <div class="lg:col-span-5 bg-brand-bgLight p-6 rounded-2xl border border-slate-200 text-center">
+                        <h4 class="font-bold text-sm text-brand-navy mb-4"><i class="fa-solid fa-chart-pie mr-2"></i> Preparation Time Comparison</h4>
+                        <div class="relative max-w-[250px] mx-auto">
+                            <canvas id="timeCompareChart"></canvas>
+                        </div>
+                        <div class="mt-6 grid grid-cols-2 gap-4 text-left pt-4 border-t border-slate-200">
+                            <div>
+                                <span class="w-3 h-3 bg-red-400 rounded-full inline-block mr-1"></span>
+                                <span class="text-xs font-bold text-slate-700">Manual (1-2 Hrs)</span>
+                                <p class="text-[10px] text-slate-400">Prone to omissions, static text, high friction.</p>
+                            </div>
+                            <div>
+                                <span class="w-3 h-3 bg-emerald-400 rounded-full inline-block mr-1"></span>
+                                <span class="text-xs font-bold text-slate-700">AI Skill (~10 Mins)</span>
+                                <p class="text-[10px] text-slate-400">Standardized, fully interactive, data-rich.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHASE 1: DESIRED OUTPUT & MVP -->
+            <section id="phase-1" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 scroll-mt-28">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-5 space-y-6">
+                        <span class="text-xs font-bold text-brand-accent uppercase tracking-wider block">Phase 1: Concept & Pipeline</span>
+                        <h2 class="text-3xl font-bold font-serif text-brand-navy">Teaching AI to Generate Structured Industry Reports</h2>
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            I began by reversing the problem. Instead of thinking about AI or code, I conceptualized my <strong> ideal customer report</strong>. 
+                        </p>
+                        
+                        <!-- Core simple workflow -->
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-4">
+                            <h4 class="font-bold text-xs text-brand-navy uppercase tracking-wider">The Pipeline</h4>
+                            <div class="flex items-center gap-2 text-xs font-semibold text-slate-600 flex-wrap">
+                                <span class="px-2.5 py-1.5 bg-brand-navy text-white rounded-lg">Market Research</span>
+                                <i class="fa-solid fa-arrow-right text-slate-400"></i>
+                                <span class="px-2.5 py-1.5 bg-brand-navy text-white rounded-lg">Data Collection</span>
+                                <i class="fa-solid fa-arrow-right text-slate-400"></i>
+                                <span class="px-2.5 py-1.5 bg-brand-navy text-white rounded-lg">Data Analysis</span>
+                                <i class="fa-solid fa-arrow-right text-slate-400"></i>
+                                <span class="px-2.5 py-1.5 bg-brand-navy text-white rounded-lg">Report</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-brand-bgLight border-l-4 border-brand-teal p-4 rounded-r-xl">
+                            <span class="text-xs font-bold text-brand-teal block">KEY INSIGHT</span>
+                            <p class="text-xs text-slate-600 mt-1 font-medium">
+                                "At this stage, I used simple prompts and kept improving them based on the results. The goal was not to be perfect from the start, but to keep learning and improving."
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <!-- Card 1: Demo Share -->
+                        <div class="bg-brand-navy rounded-2xl p-6 text-white shadow-lg border border-brand-darkBlue">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-red-400"></span>
+                                    <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                                    <span class="w-3 h-3 rounded-full bg-green-400"></span>
+                                </div>
+                                <span class="text-xs font-mono text-slate-400">Phase 1 Output Preview</span>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-brand-gold text-lg pt-1"></i>
+                                    <div>
+                                        <h4 class="font-bold text-brand-gold text-sm">Demo: How I Improved Prompts Step by Step to Help AI Better Understand My Requirements </h4>
+                                        <p class="text-xs text-slate-300 mt-1">The first successful version of AI-generated market research. Fast and detailed, but still presented in a simple text document format.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center gap-4">
+                                    <div class="space-y-1">
+                                        <span class="text-xs text-slate-400 uppercase tracking-wider block">DEMO LIVE SHARE</span>
+                                        <a href="https://www.accio.com/work/share/ZkYQfbh6YzjX" target="_blank" class="text-brand-gold font-bold text-xs hover:underline flex items-center gap-1">
+                                            accio.com/work/share/ZkYQfbh6YzjX <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                    <a href="https://www.accio.com/work/share/ZkYQfbh6YzjX" target="_blank" class="bg-brand-gold text-brand-navy hover:bg-white hover:text-brand-navy transition-all px-4 py-2 rounded-lg text-xs font-bold shadow whitespace-nowrap">
+                                        Open Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Master Sourcing Prompt used by Amy -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-lg space-y-4">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-code text-brand-gold"></i>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-200">Generating Industry Report Promt</span>
+                                </div>
+                                <button onclick="copyMasterPrompt()" class="bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-gold border border-brand-gold/30 px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all">
+                                    <i id="copyIcon" class="fa-regular fa-copy"></i>
+                                    <span id="copyText">Copy Prompt</span>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                This is the example detailed promt Amy used to guide Accio in generating market research reports for fashion and garment export industries:
+                            </p>
+                            <!-- Prompt Scroll View -->
+                            <div class="bg-slate-950 p-4 rounded-xl border border-white/5 font-mono text-[11px] text-emerald-400 max-h-56 overflow-y-auto leading-relaxed">
+                                <pre id="masterPromptText" class="whitespace-pre-wrap text-left">You are a Senior Alibaba.com Market Intelligence Analyst and Global Apparel Export Strategy Expert specializing in B2B fashion and garment export industries.
+
+Create an ultra-detailed, data-driven, benchmark-based industry intelligence report on:
+# Casual Fashion Apparel Export from Vietnam on Alibaba.com
+
+Including:
+* T-shirts (T-shirt, Polo Shirt)
+* Jackets (Jacket, Windbreaker, Hoodie)
+* Fashion Pants (Jeans, Joggers, Casual Pants)
+* Daily Wear / Streetwear / Basic Fashion
+* Vietnamese OEM/ODM Fashion Factories
+
+---
+# 🎯 ANALYSIS OBJECTIVES
+The purpose of this report is to provide actionable market intelligence that helps:
+* Understand the overall Casual Apparel market landscape on Alibaba.com
+* Evaluate the competitiveness of Vietnamese suppliers
+* Benchmark Vietnam against China, Bangladesh, India, and Pakistan
+* Identify growth opportunities for Vietnam's apparel export industry
+* Optimize listing strategy, keyword strategy, pricing strategy, and inquiry generation performance
+
+---
+# 📊 REQUIRED ANALYSIS SCOPE
+## 1. Market Overview
+### Global Casual Apparel Industry on Alibaba.com
+Analyze:
+### Total Global Supplier Count by Category
+* T-shirt manufacturers
+* Hoodie suppliers
+* Jacket suppliers
+* Jeans manufacturers
+* Casual pants factories
+* Streetwear OEM suppliers
+* Casual wear manufacturers
+
+### Supplier Distribution by Country
+* Vietnam, China, India, Bangladesh, Pakistan
+
+### Segment Breakdown
+#### Basic Wear (Mass Market)
+* Plain T-shirts, Basic Hoodies, Casual Pants
+#### Mid-Range OEM Fashion
+* Brand Manufacturing, Private Label Apparel, Fashion Collections
+#### Premium Streetwear & Private Label
+* Designer Streetwear, Sustainable Fashion, Premium Custom Clothing
+
+### Growth Trend Analysis
+* 12-month, 24-month, 36-month growth trends
+
+### Seasonality Analysis
+* Summer peak season (T-shirts), Winter peak (Hoodies/Jackets), collection launch cycles
+
+---
+## 2. Vietnam Supplier Landscape (MOST IMPORTANT SECTION)
+Identify and list ALL Vietnamese suppliers on Alibaba.com that are relevant to Casual Fashion Apparel.
+Create a complete supplier database table:
+| Supplier Name | Alibaba Store URL | Category | Years Active | Certification | Main Products | MOQ | Price Range | Response Rate | Transaction Level | Estimated Scale | Keywords |
+
+---
+## 3. Global Competitor Benchmark
+Analyze the top 30–50 strongest suppliers globally (China, Bangladesh, India, Pakistan) on product catalog size, MOQ strategy, pricing competitiveness, and SEO dominance.
+
+---
+## 4. Pricing Intelligence (CRITICAL SECTION)
+Analyze pricing minimum, median, and maximum across Vietnam, China, Bangladesh, India, and Pakistan for Basic T-shirt, Polo Shirt, Hoodie, Jacket, and Jeans.
+
+---
+## 5. Demand Analysis (Alibaba Buyer Behavior)
+Analyze RFQ Volume, Inquiry Density, Top Import Markets (USA, EU, Middle East, Japan, Korea, Africa), and Buyer Segmentation (Brands, Wholesalers, Amazon/Shopify sellers).
+
+---
+## 6. Product & Listing Strategy (Alibaba.com Optimization)
+Identify winning listing structures (Title formula, Keyword stacking, Bundles) and Image strategies (Lifestyle models, Close-ups).
+
+---
+## 7. SEO & Keyword Intelligence
+Identify top ranking keywords and perform Country Keyword Gap Analysis.
+
+---
+## 8. Vietnam Competitive Positioning
+Assess Vietnam's strengths (higher quality perception, flexible MOQ) and weaknesses (weak SEO visibility, smaller scale).
+
+---
+## 9. Growth & Opportunity Map
+Identify white-space categories (Sustainable apparel, Small MOQ streetwear).
+
+---
+## 10. STRATEGY FOR VIETNAM SUPPLIERS (ACTIONABLE)
+Provide actionable positioning, pricing, 30-60-90 Day Action Plan, and inquiry lead-generation strategies.</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHASE 2: TRANSFORMATION TO INTERACTIVE HTML -->
+            <section id="phase-2" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 scroll-mt-28">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-7 space-y-6 order-2 lg:order-1">
+                        <!-- Card 1: Visual Portal Demo -->
+                        <div class="bg-slate-900 rounded-2xl p-6 text-white shadow-lg border border-slate-800 space-y-6">
+                            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-brand-orange"><i class="fa-solid fa-code mr-1"></i>How I Taught AI to Build HTML Reports with the Features and Modules I Needed</span>
+                                
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="bg-white/5 p-4 rounded-xl text-center border border-white/5">
+                                    <i class="fa-solid fa-tablet-screen-button text-brand-gold text-xl mb-1"></i>
+                                    <span class="block text-xs font-bold text-white">Interactive Charts</span>
+                                    <p class="text-[10px] text-slate-400 mt-1">Say goodbye to static, boring lists.</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl text-center border border-white/5">
+                                    <i class="fa-solid fa-link text-brand-teal text-xl mb-1"></i>
+                                    <span class="block text-xs font-bold text-white">Direct Sourcing Links</span>
+                                    <p class="text-[10px] text-slate-400 mt-1">Instant redirect to supplier stores.</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl text-center border border-white/5">
+                                    <i class="fa-solid fa-mobile-button text-brand-orange text-xl mb-1"></i>
+                                    <span class="block text-xs font-bold text-white">Responsive Layouts</span>
+                                    <p class="text-[10px] text-slate-400 mt-1">Read on mobile, laptop, or projector.</p>
+                                </div>
+                            </div>
+
+                            <!-- Live share link -->
+                            <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex justify-between items-center gap-4">
+                                <div class="space-y-1">
+                                    <span class="text-xs text-slate-400 uppercase tracking-wider block">DEMO LIVE SHARE</span>
+                                    <a href="https://www.accio.com/work/share/juqofs6kJf8M" target="_blank" class="text-brand-orange font-bold text-xs hover:underline flex items-center gap-1">
+                                        accio.com/work/share/juqofs6kJf8M <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                    </a>
+                                </div>
+                                <a href="https://www.accio.com/work/share/juqofs6kJf8M" target="_blank" class="bg-brand-orange text-white hover:bg-white hover:text-brand-navy transition-all px-4 py-2 rounded-lg text-xs font-bold shadow whitespace-nowrap">
+                                    Open Demo
+                                </a>
+                            </div>
+							<div class="bg-white/5 border border-white/10 rounded-xl p-4 mt-3 flex justify-between items-center gap-4">
+    <div class="space-y-1">
+        <span class="text-xs text-slate-400 uppercase tracking-wider block">
+            SAMPLE RESULT
+        </span>
+
+        <a href="https://dothihongthom252-cyber.github.io/gom-su/Gom_su_VietNam.html"
+           target="_blank"
+           class="text-brand-gold font-bold text-xs hover:underline flex items-center gap-1">
+            View Generated HTML Report
+            <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+        </a>
+    </div>
+
+    <a href="https://dothihongthom252-cyber.github.io/gom-su/Gom_su_VietNam.html"
+       target="_blank"
+       class="bg-brand-gold text-brand-navy px-4 py-2 rounded-lg text-xs font-bold shadow whitespace-nowrap">
+        Open Sample Result
+    </a>
+</div>
+                        </div>
+
+                        <!-- Card 2: HTML Generator Prompt used by Amy -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-lg space-y-4">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-code text-brand-orange"></i>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-200">HTML Report Generator Prompt</span>
+                                </div>
+                                <button onclick="copyHTMLPrompt()" class="bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange border border-brand-orange/30 px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all">
+                                    <i id="copyHTMLIcon" class="fa-regular fa-copy"></i>
+                                    <span id="copyHTMLText">Copy Prompt</span>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                This is the prompt template Amy used to instruct the agent to transform the raw text report into an interactive consulting portal:
+                            </p>
+                            <!-- Prompt Scroll View -->
+                            <div class="bg-slate-950 p-4 rounded-xl border border-white/5 font-mono text-[11px] text-emerald-400 max-h-56 overflow-y-auto leading-relaxed">
+                                <pre id="htmlPromptText" class="whitespace-pre-wrap text-left">Export the report as a highly visual HTML dashboard with a left sidebar navigation, interactive pop-ups, visual effects, and other dynamic elements. Preserve all content from the source file without removing, shortening, or summarizing any information.
+
+The supplier table is especially important and must remain fully intact. Every supplier listed in the report must include a clickable link directing users to that supplier’s Alibaba.com storefront.
+
+For all YoY growth figures, regulations, government policies, market statistics, and industry trends, include references and direct links to official reports, government publications, news articles, or authoritative sources.
+
+To enrich the report, add several mini-site style showcases of leading apparel manufacturers, including images of factories, production lines, showrooms, and products. The goal is to make the HTML report visually engaging and information-rich rather than text-heavy.
+
+Interactive pop-ups should be implemented throughout the report. When users click on a supplier, company card, chart element, or product image, a pop-up should display detailed information such as:
+* Supplier profile
+* Company strengths
+* Certifications
+* Main products
+* Export markets
+* MOQ and pricing information
+* Product specifications
+* Related market insights
+
+Whenever possible, include direct links that take users straight to the relevant Alibaba.com storefront or product page.
+
+The final HTML should function as an interactive market intelligence portal, combining comprehensive data, visual content, supplier information, product showcases, and authoritative references in a professional and engaging format.</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5 space-y-6 order-1 lg:order-2">
+                        <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">Phase 2: HTML Integration</span>
+                        <h2 class="text-3xl font-bold font-serif text-brand-navy">Transforming Reports into Interactive Dashboards</h2>
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            Word documents are informative, but customers find long walls of text exhausting. They prefer high-impact visual formats.
+                        </p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-check"></i></div>
+                                <span class="text-xs font-semibold text-slate-700">Custom charts instead of raw figures</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-check"></i></div>
+                                <span class="text-xs font-semibold text-slate-700">Clickable B2B sourcing supplier links</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold"><i class="fa-solid fa-check"></i></div>
+                                <span class="text-xs font-semibold text-slate-700">Interactive market reports</span>
+                            </div>
+                        </div>
+
+                        <!-- Progress workflow block -->
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-500">Evolution Path:</span>
+                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                                <span>Word Document</span>
+                                
+                        
+                                <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                                <span class="text-brand-teal">Interactive HTML</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHASE 3: CONVERTING WORKFLOW INTO A REUSABLE SKILL -->
+            <section id="phase-3" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 scroll-mt-28">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-5 space-y-6">
+                        <span class="text-xs font-bold text-brand-teal uppercase tracking-wider block">Phase 3: Scale & Standardize</span>
+                        <h2 class="text-3xl font-bold font-serif text-brand-navy">Converting a Workflow into a Reusable Accio Skill</h2>
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            Repeating the same process manually takes a lot of time. To solve this, I worked with "Accio Coder" to turn the entire workflow into a reusable Accio Skill.
+                        </p>
+
+                        <!-- Key Objectives of Phase 3 -->
+                        <div class="grid grid-cols-1 gap-3 text-xs text-slate-700">
+                            <div class="bg-brand-bgLight p-3.5 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <i class="fa-solid fa-clock text-brand-teal text-base"></i>
+                                <div>
+                                    <span class="font-bold block text-slate-800">Save Setup Time</span>
+                                    <span class="text-[11px] text-slate-500">No need to set everything up from scratch. Just enter a request and run it immediately.</span>
+                                </div>
+                            </div>
+                            <div class="bg-brand-bgLight p-3.5 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <i class="fa-solid fa-cubes text-brand-teal text-base"></i>
+                                <div>
+                                    <span class="font-bold block text-slate-800">Consistent Outputs</span>
+                                    <span class="text-[11px] text-slate-500">Consistent layout, sections, and criteria.</span>
+                                </div>
+                            </div>
+                            <div class="bg-brand-bgLight p-3.5 rounded-xl border border-slate-100 flex items-center gap-3">
+                                <i class="fa-solid fa-share-nodes text-brand-teal text-base"></i>
+                                <div>
+                                    <span class="font-bold block text-slate-800">Easy for the Team to Use</span>
+                                    <span class="text-[11px] text-slate-500">The skill can be shared and reused by the entire team.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <!-- Card 1: Agent Loop -->
+                        <div class="bg-brand-darkBlue text-white rounded-2xl p-6 shadow-lg border border-slate-700">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-4 mb-4">
+                                <span class="text-xs font-mono text-brand-gold"><i class="fa-solid fa-gears mr-1"></i> How i work with Accio Coder?</span>
+                                <span class="text-[10px] bg-brand-gold/10 text-brand-gold px-2 py-0.5 rounded border border-brand-gold/20 font-bold">100% Automatic</span>
+                            </div>
+
+                            <div class="space-y-4 text-xs">
+                                <p class="text-slate-300">
+                                    I didn't write any Python or JavaScript myself. Instead, I focused on defining my requirements and guiding Accio Coder to build the solution.
+                                </p>
+                                
+                                <div class="grid grid-cols-2 gap-3 text-slate-200">
+                                    <div class="bg-white/5 p-3 rounded-lg border border-white/5"><i class="fa-solid fa-list-check text-brand-gold mr-1.5"></i> Expected outputs</div>
+                                    <div class="bg-white/5 p-3 rounded-lg border border-white/5"><i class="fa-solid fa-check-double text-brand-gold mr-1.5"></i> Validation rules</div>
+                                    <div class="bg-white/5 p-3 rounded-lg border border-white/5"><i class="fa-solid fa-briefcase text-brand-gold mr-1.5"></i> Business rules</div>
+                                    <div class="bg-white/5 p-3 rounded-lg border border-white/5"><i class="fa-solid fa-display text-brand-gold mr-1.5"></i> User experience</div>
+                                </div>
+
+                                <div class="bg-brand-navy border border-white/10 rounded-xl p-4 flex justify-between items-center gap-4">
+                                    <div class="space-y-1">
+                                        <span class="text-[10px] text-slate-400 uppercase tracking-wider block">DEMO LIVE SHARE</span>
+                                        <a href="https://www.accio.com/work/share/sMOaR5bzOO72" target="_blank" class="text-brand-gold font-bold text-xs hover:underline flex items-center gap-1">
+                                            accio.com/work/share/sMOaR5bzOO72 <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                    <a href="https://www.accio.com/work/share/sMOaR5bzOO72" target="_blank" class="bg-brand-gold text-brand-navy hover:bg-white hover:text-brand-navy transition-all px-4 py-2 rounded-lg text-xs font-bold shadow whitespace-nowrap">
+                                        Open Demo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Skill Package Download -->
+                        <div class="bg-gradient-to-br from-[#1E3E62] to-brand-navy border border-brand-accent/25 rounded-2xl p-6 text-white shadow-xl space-y-4">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-3">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-circle-down text-brand-gold text-lg animate-bounce"></i>
+                                    <span class="text-xs font-bold uppercase tracking-wider text-slate-100">Reusable Skill [add this skill to your Accio account]</span>
+                                </div>
+                                <span class="text-[10px] bg-brand-teal/20 text-brand-teal px-2 py-0.5 rounded border border-brand-teal/30 font-bold">Free Download</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Download the ready-to-install B2B Professional Industry Report HTML skill package:
+                            </p>
+                            
+                            <!-- Skill Metadata Grid -->
+                            <div class="grid grid-cols-2 gap-3 text-xs pt-1">
+                                <div class="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-2.5">
+                                    <i class="fa-solid fa-file-zipper text-brand-gold text-lg"></i>
+                                    <div class="truncate">
+                                        <span class="text-slate-400 text-[10px] block uppercase">Package Name</span>
+                                        <span class="font-bold block text-white truncate" title="ggs-PNSR-html.zip">ggs-PNSR-html.zip</span>
+                                    </div>
+                                </div>
+                                <div class="bg-white/5 p-3 rounded-xl border border-white/5 flex items-center gap-2.5">
+                                    <i class="fa-solid fa-microchip text-brand-orange text-lg"></i>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] block uppercase">Compatibility</span>
+                                        <span class="font-bold block text-white">Accio Work Engine</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Install steps accordion -->
+                            <div class="bg-slate-950/60 p-4 rounded-xl border border-white/5 text-[11px] text-slate-300 space-y-2">
+                                <span class="font-bold block text-brand-gold uppercase text-[10px]"><i class="fa-solid fa-circle-info mr-1"></i> Quick Setup Guide:</span>
+                                <div class="flex gap-2">
+                                    <span class="font-bold text-brand-orange">1.</span>
+                                    <p>Download ZIP package to your local workspace (no need to extract).
+                                </div>
+                                <div class="flex gap-2">
+                                    <span class="font-bold text-brand-orange">2.</span>
+                                    <p>Open your Accio -> Plugins -> Skills -> Upload -> Select archive (.zip/ .tar.gz)
+                                </div>
+                            </div>
+
+                            <!-- Download Button -->
+                            <a href="ggs-PNSR-html.zip" download class="bg-gradient-to-r from-brand-gold to-brand-accent hover:from-white hover:to-white text-brand-navy hover:text-brand-navy transition-all py-3.5 rounded-xl text-xs font-bold text-center block shadow-lg flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download text-sm"></i> Download Skill Resource Pack (ZIP)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<div class="mt-6">
+    <h4 class="text-sm font-bold uppercase tracking-wider text-brand-gold mb-4">
+        Result Reports HTML
+    </h4>
+
+    <div class="grid grid-cols-3 gap-4">
+
+        <!-- Vietnamese Version -->
+        <div class="bg-orange/5 border border-white/10 rounded-xl p-5 text-center min-h-[180px] flex flex-col justify-between">
+            <div>
+                <div class="text-3xl mb-3">🇻🇳</div>
+                <div class="font-bold text-orange-400 mb-2">
+                    Furniture Report
+                </div>
+                <div class="text-xs text-slate-300 mb-4">
+                    Vietnamese Version
+                </div>
+            </div>
+
+            <a href="https://dothihongthom252-cyber.github.io/vietnamese/vietnamese.html"
+               target="_blank"
+               class="inline-block bg-brand-gold text-brand-navy px-4 py-2 rounded-lg text-xs font-bold">
+                Open HTML
+            </a>
+        </div>
+
+        <!-- English Version -->
+        <div class="bg-white/5 border border-white/10 rounded-xl p-5 text-center min-h-[180px] flex flex-col justify-between">
+            <div>
+                <div class="text-3xl mb-3">🇺🇸</div>
+                <div class="font-bold text-orange-400 mb-2">
+                    Furniture Report
+                </div>
+                <div class="text-xs text-slate-300 mb-4">
+                    English Version
+                </div>
+            </div>
+
+            <a href="https://dothihongthom252-cyber.github.io/English/english.html"
+               target="_blank"
+               class="inline-block bg-brand-gold text-brand-navy px-4 py-2 rounded-lg text-xs font-bold">
+                Open HTML
+            </a>
+        </div>
+
+        <!-- Chinese Version -->
+        <div class="bg-white/5 border border-white/10 rounded-xl p-5 text-center min-h-[180px] flex flex-col justify-between">
+            <div>
+                <div class="text-3xl mb-3">🇨🇳</div>
+                <div class="font-bold text-orange-400 mb-2">
+                    Furniture Report
+                </div>
+                <div class="text-xs text-slate-300 mb-4">
+                    Chinese Version
+                </div>
+            </div>
+
+            <a href="https://dothihongthom252-cyber.github.io/Chinese1/chinese.html"
+               target="_blank"
+               class="inline-block bg-brand-gold text-brand-navy px-4 py-2 rounded-lg text-xs font-bold">
+                Open HTML
+            </a>
+        </div>
+
+    </div>
+</div>
+            <!-- CONTINUOUS IMPROVEMENTS & POWERFUL FEATURES -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8">
+                <div class="max-w-3xl mb-8 space-y-2">
+                    <span class="text-xs font-bold text-brand-accent uppercase tracking-wider block">Continuous Optimization</span>
+                    <h2 class="text-3xl font-bold font-serif text-brand-navy">Evolving the Skill Beyond Basic Research</h2>
+                    <p class="text-slate-500 text-sm">
+                        The current version of the skill is the result of continuous improvements.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-3">
+                        <div class="w-10 h-10 bg-brand-navy text-white rounded-lg flex items-center justify-center text-lg"><i class="fa-solid fa-newspaper text-brand-gold"></i></div>
+                        <h4 class="font-bold text-slate-800 text-sm">Trusted Data Sources</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Pulls live macro trends, economic policy updates, and regional reports instantly.</p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-3">
+                        <div class="w-10 h-10 bg-brand-navy text-white rounded-lg flex items-center justify-center text-lg"><i class="fa-solid fa-quote-right text-brand-orange"></i></div>
+                        <h4 class="font-bold text-slate-800 text-sm">Source Verification</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Includes references and citations from trusted reports and publications to improve accuracy.</p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-3">
+                        <div class="w-10 h-10 bg-brand-navy text-white rounded-lg flex items-center justify-center text-lg"><i class="fa-solid fa-store text-brand-teal"></i></div>
+                        <h4 class="font-bold text-slate-800 text-sm">Valid Sourcing Links</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Checks and verifies active supplier stores, Alibaba.com profiles, and product links.</p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-xl p-5 space-y-3">
+                        <div class="w-10 h-10 bg-brand-navy text-white rounded-lg flex items-center justify-center text-lg"><i class="fa-solid fa-language text-brand-accent"></i></div>
+                        <h4 class="font-bold text-slate-800 text-sm">Multi-Language Support</h4>
+                        <p class="text-xs text-slate-500 leading-relaxed">Supports report generation in any languages.</p>
+                    </div>
+                </div>
+
+                <!-- Live Command Showcase -->
+                <div class="mt-8 bg-brand-navy rounded-xl p-6 text-white border border-brand-darkBlue space-y-4">
+                    <div class="flex items-center gap-2 border-b border-white/10 pb-3">
+                        <i class="fa-solid fa-terminal text-brand-gold"></i>
+                        <span class="text-xs font-mono text-slate-300">How to make this skill work?</span>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-lg font-mono text-xs text-brand-gold overflow-x-auto">
+                        By Promt:
+						Use this Skill to create an HTML market intelligence report for <span class="text-white">[Industry/Product]</span> from <span class="text-white">[Country]</span>.
+                    </div>
+                    <p class="text-xs text-slate-400">
+                        <i class="fa-solid fa-circle-info mr-1"></i> <strong>Example run:</strong> <em>"Use this Skill to create an HTML market intelligence report for the furniture industry from Vietnam."</em>
+                    </p>
+                </div>
+            </section>
+
+            
+
+            <!-- KEY LESSONS & FRAMEWORK -->
+            <section id="key-lessons" class="grid grid-cols-1 md:grid-cols-2 gap-8 scroll-mt-28">
+                <!-- Lessons Card -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">Key Lesson Learned</span>
+                        <h2 class="text-3xl font-bold font-serif text-brand-navy">Communication Over Coding</h2>
+                        
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            The biggest lesson was not learning how AI works. It was learning how to communicate clearly with AI.
+
+Working with AI is very similar to training a new analyst. The quality of the output depends on how clearly you explain your expectations.
+                        </p>
+
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold mt-0.5"><i class="fa-solid fa-1"></i></span>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Explain Requirements Clearly</h4>
+                                    <p class="text-xs text-slate-500 mt-0.5">Provide detailed specifications, target output structures, and data boundaries.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold mt-0.5"><i class="fa-solid fa-2"></i></span>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Provide Structural Examples</h4>
+                                    <p class="text-xs text-slate-500 mt-0.5">Share sample reports or layouts so AI can better understand the desired format.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-brand-orange/10 text-brand-orange flex items-center justify-center text-xs font-bold mt-0.5"><i class="fa-solid fa-3"></i></span>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Review and Improve</h4>
+                                    <p class="text-xs text-slate-500 mt-0.5">Continuously review the results and provide feedback to improve future outputs.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- McKinsey Strategy Card -->
+                <div class="bg-gradient-to-br from-[#0B192C] to-brand-darkBlue text-white border border-slate-700 rounded-2xl p-8 shadow-xl flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <span class="text-xs font-bold text-brand-gold uppercase tracking-wider block">Final Execution Framework</span>
+                        <h2 class="text-3xl font-bold font-serif text-brand-gold">My Framework for Building AI Working Solutions</h2>
+                        
+                        <div class="space-y-6 relative pl-6 border-l-2 border-brand-gold/30 mt-6 text-sm">
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-gold text-brand-navy w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow">1</span>
+                                <span class="font-bold block text-slate-100">Start with the Desired Outcome</span>
+                                <p class="text-xs text-slate-300 mt-1">Determine the ideal, final result that delivers the result you want.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-gold text-brand-navy w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow">2</span>
+                                <span class="font-bold block text-slate-100">Break into Smaller Steps</span>
+                                <p class="text-xs text-slate-300 mt-1">Turn a complex task into smaller and easier-to-manage workflows.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-gold text-brand-navy w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow">3</span>
+                                <span class="font-bold block text-slate-100">Work with AI to Improve Each Step</span>
+                                <p class="text-xs text-slate-300 mt-1">Use AI agents to refine and optimize every part of the process.</p>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute -left-9 top-0.5 bg-brand-gold text-brand-navy w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shadow">4</span>
+                                <span class="font-bold block text-slate-100">Turn It into a Reusable Skill</span>
+                                <p class="text-xs text-slate-300 mt-1">Deploy the workflow on Accio to enable 1-click execution for the entire team.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-white/10 mt-6 text-xs text-slate-400">
+                        <i class="fa-solid fa-award text-brand-gold mr-1"></i> You don't need to be a software engineer to build with AI. You just need a clear vision and a structured approach.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- OUTRO HERO CTA -->
+        <footer class="bg-brand-navy text-white pt-16 pb-12 border-t border-brand-darkBlue/80">
+            <div class="max-w-7xl mx-auto px-6 text-center space-y-6">
+                <div class="inline-block bg-brand-gold/10 border border-brand-gold/30 rounded-full p-2 text-brand-gold mb-2">
+                    <i class="fa-solid fa-flag-checkered text-xl"></i>
+                </div>
+                <h2 class="font-serif text-3xl md:text-4xl font-bold max-w-2xl mx-auto">
+                    Let's Turn Ideas into Reality with AI
+                </h2>
+                <p class="text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
+                    AI is no longer just a tool for engineers. With a clear vision, the right approach, and continuous iteration, anyone can turn an idea into a real solution.
+
+If you have an interesting idea, a useful workflow, or a Skill you'd like to build or share, I'd love to connect and explore it together.
+                </p>
+                
+                <div class="flex justify-center gap-4 flex-wrap pt-4">
+                    <a href="mailto:hongthom.do@alibaba-inc.com" class="bg-white/5 border border-white/10 text-white hover:bg-white hover:text-brand-navy transition-all px-6 py-3 rounded-full text-xs font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-envelope"></i> Email: hongthom.do@alibaba-inc.com
+                    </a>
+                    <span class="bg-brand-darkBlue border border-brand-gold/30 text-brand-gold px-6 py-3 rounded-full text-xs font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-message"></i> DingTalk ID: hongthomdo
+                    </span>
+                </div>
+
+                <div class="pt-12 border-t border-white/5 text-[11px] text-slate-500 space-y-1">
+                    <p>&copy; 2026 Alibaba International Digital Commerce Group - Vietnam Team. All rights reserved.</p>
+                    <p>Designed and generated by Amy Do in collaboration with AI.</p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+
+    <!-- MODE 2: PRESENTATION DECK VIEW (HORIZONTAL SLIDESHOW) -->
+    <main id="presentationView" class="hidden min-h-[calc(100vh-65px)] bg-[#0B192C] text-white flex-col justify-between relative overflow-hidden">
+        
+        <!-- Interactive slide layout grid background -->
+        <div class="absolute inset-0 opacity-5 pointer-events-none">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="grid-dark" width="60" height="60" patternUnits="userSpaceOnUse">
+                        <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" stroke-width="1.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid-dark)" />
+            </svg>
+        </div>
+
+        <!-- Slide Progress Header Indicator -->
+        <div class="w-full bg-white/5 h-1 relative z-20">
+            <div id="deckProgressBar" class="bg-gradient-to-r from-brand-gold to-brand-orange h-full transition-all duration-300" style="width: 12.5%;"></div>
+        </div>
+
+        <!-- MAIN SLIDE VIEWER CONTAINER -->
+        <div class="max-w-6xl mx-auto px-6 py-12 flex-grow flex items-center justify-center relative z-10 w-full">
+            
+            <!-- SLIDE 1: INTRO TITLE -->
+            <div class="slide active flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="1">
+                <div class="space-y-6 md:w-3/5 text-left">
+                    <span class="text-xs font-extrabold text-brand-gold uppercase tracking-wider block bg-brand-darkBlue border border-brand-gold/20 inline-block px-3 py-1 rounded-full"><i class="fa-solid fa-bolt mr-1"></i> AI Innovation Showcase</span>
+                    <h1 class="font-serif text-3xl md:text-5xl font-bold leading-tight">
+                        How I Built an <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-orange">AI Skill</span> to Generate Professional Market Intelligence Reports
+                    </h1>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        A personal innovation case study demonstrating how to transform domain expertise into enterprise-grade software workflows using Accio AI, completely code-free.
+                    </p>
+                    
+                    <div class="pt-4 flex gap-4 text-xs">
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                            <span class="block text-slate-400 text-[10px] uppercase">PRESENTER</span>
+                            <span class="font-bold block text-white text-xs">Hong Thom (Amy) Do</span>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+                            <span class="block text-slate-400 text-[10px] uppercase">ALIBABA.COM VN</span>
+                            <span class="font-bold block text-brand-gold text-xs">Sales Specialist</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-2/5 bg-gradient-to-tr from-brand-darkBlue to-[#1B365D] border border-white/10 rounded-2xl p-6 text-center shadow-2xl relative">
+                    <div class="absolute -top-3 -right-3 bg-brand-orange text-white text-[10px] font-bold px-3 py-1 rounded-full shadow animate-bounce">MVP Live</div>
+                    <div class="w-16 h-16 rounded-full bg-brand-gold/10 border-2 border-brand-gold mx-auto flex items-center justify-center text-3xl text-brand-gold mb-4">
+                        <i class="fa-solid fa-rocket animate-pulse"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-white">100% Code-Free Architecture</h3>
+                    <p class="text-[11px] text-slate-400 mt-2">Iteratively configured on Accio with coding agents, providing an optimized, premium output experience.</p>
+                    <div class="mt-4 bg-brand-navy p-3 rounded-lg border border-white/5 text-[11px] text-brand-gold">
+                        Execution time: ~10 minutes
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 2: THE PRESENTER -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="2">
+                <div class="md:w-2/5 space-y-4">
+                    <div class="w-20 h-20 rounded-full bg-brand-gold/10 border-2 border-brand-gold flex items-center justify-center text-4xl text-brand-gold shadow-lg mx-auto md:mx-0">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <h2 class="font-serif text-2xl font-bold">Hong Thom (Amy) Do</h2>
+                        <span class="text-xs text-brand-gold font-medium block">Job Code: 461502 | Vietnam Team</span>
+                        <p class="text-xs text-slate-400 mt-1">hongthom.do@alibaba-inc.com</p>
+                    </div>
+                </div>
+                <div class="md:w-3/5 space-y-4 text-left border-l border-white/10 pl-6">
+                    <span class="text-xs font-bold text-brand-orange uppercase block tracking-wider"><i class="fa-solid fa-graduation-cap mr-1"></i> Background & Vision</span>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Although my educational and professional backgrounds are in Economics and International Trade, I have always possessed a deep fascination for technological workflow automation. 
+                    </p>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Rather than being constrained by a lack of computer science or coding expertise, I collaborated directly with LLM agents to deliver robust SaaS outcomes that empower sales professionals.
+                    </p>
+                    <div class="bg-brand-navy border border-white/10 p-3 rounded-xl text-xs text-slate-300 italic">
+                        "The power of software is now accessible to anyone with structured logic and a clear business vision."
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 3: THE PROBLEM -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="3">
+                <div class="md:w-1/2 space-y-6 text-left">
+                    <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">The Daily Struggle</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">Manual Pre-Meeting Sourcing Research</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Sales reps regularly meet companies across diverse, unfamiliar categories. Preparing custom market analyses used to involve:
+                    </p>
+                    <div class="grid grid-cols-2 gap-3 text-xs text-slate-300">
+                        <div class="bg-white/5 p-2 rounded border border-white/5"><i class="fa-solid fa-magnifying-glass text-brand-orange mr-1"></i> Manual search</div>
+                        <div class="bg-white/5 p-2 rounded border border-white/5"><i class="fa-solid fa-store text-brand-orange mr-1"></i> Supplier audits</div>
+                        <div class="bg-white/5 p-2 rounded border border-white/5"><i class="fa-solid fa-table text-brand-orange mr-1"></i> Manual pricing</div>
+                        <div class="bg-white/5 p-2 rounded border border-white/5"><i class="fa-solid fa-file-powerpoint text-brand-orange mr-1"></i> Slide creation</div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10 space-y-4 text-left">
+                    <h4 class="font-bold text-xs text-brand-gold uppercase tracking-wider"><i class="fa-solid fa-circle-exclamation mr-1.5"></i> Traditional Challenges</h4>
+                    <div class="space-y-3 text-xs text-slate-300">
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5"></span>
+                            <span><strong>Time Consumption:</strong> Stretched across 4 to 8 hours per client.</span>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5"></span>
+                            <span><strong>Inconsistent Delivery:</strong> Differing formats based on individual styles.</span>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5"></span>
+                            <span><strong>Low Engagement:</strong> Static text blocks fail to excite modern buyers.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 4: PHASE 1 MVP -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="4">
+                <div class="md:w-1/2 space-y-4 text-left">
+                    <span class="text-xs font-bold text-brand-accent uppercase tracking-wider block">Phase 1: Output Definition</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">Reverse Engineering the Ideal B2B Report</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        I mapped the exact business pipeline and initiated output generation with simple, highly structured prompts on Accio.
+                    </p>
+                    <div class="bg-brand-navy p-4 rounded-xl border border-white/10 text-xs">
+                        <span class="text-[10px] text-slate-400 uppercase tracking-wider block mb-2">Workflow Logic</span>
+                        <div class="flex items-center gap-1.5 text-[10px] font-bold text-slate-300 flex-wrap">
+                            <span class="px-2 py-1 bg-[#1A2E50] rounded">Research</span>
+                            <i class="fa-solid fa-angle-right"></i>
+                            <span class="px-2 py-1 bg-[#1A2E50] rounded">Collection</span>
+                            <i class="fa-solid fa-angle-right"></i>
+                            <span class="px-2 py-1 bg-[#1A2E50] rounded">Analysis</span>
+                            <i class="fa-solid fa-angle-right"></i>
+                            <span class="px-2 py-1 bg-[#1A2E50] rounded">Report</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10 space-y-4 text-left flex flex-col justify-between h-[340px] relative overflow-hidden">
+                    <!-- Slide 4 Normal View -->
+                    <div id="slide4NormalView" class="space-y-4 flex flex-col justify-between h-full w-full transition-all duration-300">
+                        <div class="space-y-2">
+                            <span class="text-[10px] text-brand-gold uppercase block tracking-wider font-bold">DEMO SHARE LINK</span>
+                            <h4 class="font-bold text-sm text-white">First Sourcing Report MVP</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">A text-based market intelligence outline generated entirely code-free with structural prompts.</p>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex flex-col gap-3">
+                            <div class="flex justify-between items-center gap-2">
+                                <a href="https://www.accio.com/work/share/ZkYQfbh6YzjX" target="_blank" class="text-brand-gold font-mono text-xs hover:underline truncate">
+                                    accio.com/.../share/ZkYQfbh6YzjX <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                </a>
+                                <a href="https://www.accio.com/work/share/ZkYQfbh6YzjX" target="_blank" class="bg-brand-gold text-brand-navy px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white transition-all whitespace-nowrap">
+                                    Open MVP Demo
+                                </a>
+                            </div>
+                            <button onclick="toggleSlide4Prompt(true)" class="w-full bg-brand-accent/25 hover:bg-brand-accent/40 text-brand-gold border border-brand-accent/40 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-code"></i> View Master Prompt Used
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 4 Prompt Toggle View -->
+                    <div id="slide4PromptView" class="hidden space-y-4 flex flex-col justify-between h-full w-full absolute inset-0 bg-[#0B192C] p-6 transition-all duration-300 z-10">
+                        <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                            <span class="text-xs font-bold text-brand-gold"><i class="fa-solid fa-code mr-1.5"></i> Vietnam Casual Apparel Prompt</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copySlide4Prompt()" class="bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10 px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition-all">
+                                    <i id="copySlide4Icon" class="fa-regular fa-copy"></i>
+                                    <span id="copySlide4Text">Copy</span>
+                                </button>
+                                <button onclick="toggleSlide4Prompt(false)" class="text-slate-400 hover:text-white transition-all text-sm p-1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-white/5 font-mono text-[10px] text-emerald-400 max-h-48 overflow-y-auto leading-relaxed text-left">
+                            <pre id="slide4PromptText" class="whitespace-pre-wrap">You are a Senior Alibaba.com Market Intelligence Analyst and Global Apparel Export Strategy Expert specializing in B2B fashion and garment export industries.
+
+Create an ultra-detailed, data-driven, benchmark-based industry intelligence report on:
+# Casual Fashion Apparel Export from Vietnam on Alibaba.com
+
+Including:
+* T-shirts (T-shirt, Polo Shirt)
+* Jackets (Jacket, Windbreaker, Hoodie)
+* Fashion Pants (Jeans, Joggers, Casual Pants)
+* Daily Wear / Streetwear / Basic Fashion
+* Vietnamese OEM/ODM Fashion Factories
+
+---
+# 🎯 ANALYSIS OBJECTIVES
+The purpose of this report is to provide actionable market intelligence that helps:
+* Understand the overall Casual Apparel market landscape on Alibaba.com
+* Evaluate the competitiveness of Vietnamese suppliers
+* Benchmark Vietnam against China, Bangladesh, India, and Pakistan
+* Identify growth opportunities for Vietnam's apparel export industry
+* Optimize listing strategy, keyword strategy, pricing strategy, and inquiry generation performance
+
+---
+# 📊 REQUIRED ANALYSIS SCOPE
+## 1. Market Overview
+### Global Casual Apparel Industry on Alibaba.com
+Analyze:
+### Total Global Supplier Count by Category
+* T-shirt manufacturers
+* Hoodie suppliers
+* Jacket suppliers
+* Jeans manufacturers
+* Casual pants factories
+* Streetwear OEM suppliers
+* Casual wear manufacturers
+
+### Supplier Distribution by Country
+* Vietnam, China, India, Bangladesh, Pakistan
+
+### Segment Breakdown
+#### Basic Wear (Mass Market)
+* Plain T-shirts, Basic Hoodies, Casual Pants
+#### Mid-Range OEM Fashion
+* Brand Manufacturing, Private Label Apparel, Fashion Collections
+#### Premium Streetwear & Private Label
+* Designer Streetwear, Sustainable Fashion, Premium Custom Clothing
+
+### Growth Trend Analysis
+* 12-month, 24-month, 36-month growth trends
+
+### Seasonality Analysis
+* Summer peak season (T-shirts), Winter peak (Hoodies/Jackets), collection launch cycles
+
+---
+## 2. Vietnam Supplier Landscape (MOST IMPORTANT SECTION)
+Identify and list ALL Vietnamese suppliers on Alibaba.com that are relevant to Casual Fashion Apparel.
+Create a complete supplier database table:
+| Supplier Name | Alibaba Store URL | Category | Years Active | Certification | Main Products | MOQ | Price Range | Response Rate | Transaction Level | Estimated Scale | Keywords |
+
+---
+## 3. Global Competitor Benchmark
+Analyze the top 30–50 strongest suppliers globally (China, Bangladesh, India, Pakistan) on product catalog size, MOQ strategy, pricing competitiveness, and SEO dominance.
+
+---
+## 4. Pricing Intelligence (CRITICAL SECTION)
+Analyze pricing minimum, median, and maximum across Vietnam, China, Bangladesh, India, and Pakistan for Basic T-shirt, Polo Shirt, Hoodie, Jacket, and Jeans.
+
+---
+## 5. Demand Analysis (Alibaba Buyer Behavior)
+Analyze RFQ Volume, Inquiry Density, Top Import Markets (USA, EU, Middle East, Japan, Korea, Africa), and Buyer Segmentation (Brands, Wholesalers, Amazon/Shopify sellers).
+
+---
+## 6. Product & Listing Strategy (Alibaba.com Optimization)
+Identify winning listing structures (Title formula, Keyword stacking, Bundles) and Image strategies (Lifestyle models, Close-ups).
+
+---
+## 7. SEO & Keyword Intelligence
+Identify top ranking keywords and perform Country Keyword Gap Analysis.
+
+---
+## 8. Vietnam Competitive Positioning
+Assess Vietnam's strengths (higher quality perception, flexible MOQ) and weaknesses (weak SEO visibility, smaller scale).
+
+---
+## 9. Growth & Opportunity Map
+Identify white-space categories (Sustainable apparel, Small MOQ streetwear).
+
+---
+## 10. STRATEGY FOR VIETNAM SUPPLIERS (ACTIONABLE)
+Provide actionable positioning, pricing, 30-60-90 Day Action Plan, and inquiry lead-generation strategies.</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 5: PHASE 2 HTML -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="5">
+                <div class="md:w-1/2 space-y-4 text-left">
+                    <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">Phase 2: Visual Integration</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">Word Documents vs. Interactive HTML Portals</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Sellers and buyers dislike reading exhausting text. They want interactive, modern corporate microsites containing:
+                    </p>
+                    <div class="space-y-2 text-xs text-slate-300">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-brand-teal"></i> Interactive charts (Chart.js, ApexCharts)</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-brand-teal"></i> Filterable and sortable pricing metrics</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-brand-teal"></i> Responsive slide/dashboard view toggles</div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10 space-y-4 text-left flex flex-col justify-between h-[340px] relative overflow-hidden">
+                    <!-- Slide 5 Normal View -->
+                    <div id="slide5NormalView" class="space-y-4 flex flex-col justify-between h-full w-full transition-all duration-300">
+                        <div class="space-y-2">
+                            <span class="text-[10px] text-brand-orange uppercase block tracking-wider font-bold">DEMO SHARE LINK</span>
+                            <h4 class="font-bold text-sm text-white">Visual Dashboard Deployment</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Transitioning report structures into dynamic, single-page executive web presentations.</p>
+                        </div>
+                        <div class="pt-4 border-t border-white/5 flex flex-col gap-3">
+                            <div class="flex justify-between items-center gap-2">
+                                <a href="https://www.accio.com/work/share/juqofs6kJf8M" target="_blank" class="text-brand-orange font-mono text-xs hover:underline truncate">
+                                    accio.com/.../share/juqofs6kJf8M <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                                </a>
+                                <a href="https://www.accio.com/work/share/juqofs6kJf8M" target="_blank" class="bg-brand-orange text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-brand-navy transition-all whitespace-nowrap">
+                                    Open HTML Portal
+                                </a>
+                            </div>
+                            <button onclick="toggleSlide5Prompt(true)" class="w-full bg-brand-accent/25 hover:bg-brand-accent/40 text-brand-gold border border-brand-accent/40 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-code"></i> View HTML Prompt Used
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 5 Prompt Toggle View -->
+                    <div id="slide5PromptView" class="hidden space-y-4 flex flex-col justify-between h-full w-full absolute inset-0 bg-[#0B192C] p-6 transition-all duration-300 z-10">
+                        <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                            <span class="text-xs font-bold text-brand-orange"><i class="fa-solid fa-code mr-1.5"></i> HTML Dashboard Prompt</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="copySlide5Prompt()" class="bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10 px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1 transition-all">
+                                    <i id="copySlide5Icon" class="fa-regular fa-copy"></i>
+                                    <span id="copySlide5Text">Copy</span>
+                                </button>
+                                <button onclick="toggleSlide5Prompt(false)" class="text-slate-400 hover:text-white transition-all text-sm p-1">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 p-3 rounded-lg border border-white/5 font-mono text-[10px] text-emerald-400 max-h-48 overflow-y-auto leading-relaxed text-left">
+                            <pre id="slide5PromptText" class="whitespace-pre-wrap">Export the report as a highly visual HTML dashboard with a left sidebar navigation, interactive pop-ups, visual effects, and other dynamic elements. Preserve all content from the source file without removing, shortening, or summarizing any information.
+
+The supplier table is especially important and must remain fully intact. Every supplier listed in the report must include a clickable link directing users to that supplier’s Alibaba.com storefront.
+
+For all YoY growth figures, regulations, government policies, market statistics, and industry trends, include references and direct links to official reports, government publications, news articles, or authoritative sources.
+
+To enrich the report, add several mini-site style showcases of leading apparel manufacturers, including images of factories, production lines, showrooms, and products. The goal is to make the HTML report visually engaging and information-rich rather than text-heavy.
+
+Interactive pop-ups should be implemented throughout the report. When users click on a supplier, company card, chart element, or product image, a pop-up should display detailed information such as:
+* Supplier profile
+* Company strengths
+* Certifications
+* Main products
+* Export markets
+* MOQ and pricing information
+* Product specifications
+* Related market insights
+
+Whenever possible, include direct links that take users straight to the relevant Alibaba.com storefront or product page.
+
+The final HTML should function as an interactive market intelligence portal, combining comprehensive data, visual content, supplier information, product showcases, and authoritative references in a professional and engaging format.</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 6: PHASE 3 REUSABLE SKILL -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="6">
+                <div class="md:w-1/2 space-y-4 text-left">
+                    <span class="text-xs font-bold text-brand-teal uppercase tracking-wider block">Phase 3: Scale & Standardization</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">Packaging Automation as an Accio Skill</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Rather than starting prompt configurations from scratch, I worked with an AI Coding Agent to design a completely standardized reusable B2B Skill.
+                    </p>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-3 text-xs text-slate-300">
+                        <strong>Role Focus:</strong> I defined business rules, target structures, and UX parameters; the AI agent executed coding requirements.
+                    </div>
+                </div>
+                <div class="md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10 space-y-4 text-left flex flex-col justify-between h-[340px] relative overflow-hidden">
+                    <div class="space-y-2">
+                        <span class="text-[10px] text-brand-teal uppercase block tracking-wider font-bold">DEMO SHARE LINK</span>
+                        <h4 class="font-bold text-sm text-white">Full Sourcing Skill Deployment</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">The final packaged automation layout allowing 1-click execution for the global trade team.</p>
+                    </div>
+                    
+                    <!-- Integrated download badge -->
+                    <div class="bg-[#1E3E62]/30 border border-brand-accent/20 rounded-xl p-3 flex justify-between items-center gap-3">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <i class="fa-solid fa-file-zipper text-brand-gold text-lg flex-shrink-0"></i>
+                            <div class="min-w-0">
+                                <span class="text-white font-bold text-xs block truncate" title="ggs-PNSR-html.zip">ggs-PNSR-html.zip</span>
+                                <span class="text-[9px] text-slate-400 block">Accio Skill Package</span>
+                            </div>
+                        </div>
+                        <a href="ggs-PNSR-html.zip" download class="bg-brand-gold hover:bg-white text-brand-navy hover:text-brand-navy text-[10px] font-extrabold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 flex-shrink-0">
+                            <i class="fa-solid fa-download"></i> Download
+                        </a>
+                    </div>
+
+                    <div class="pt-3 border-t border-white/5 flex items-center justify-between gap-4">
+                        <a href="https://www.accio.com/work/share/sMOaR5bzOO72" target="_blank" class="text-brand-teal font-mono text-xs hover:underline truncate">
+                            accio.com/.../share/sMOaR5bzOO72 <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
+                        </a>
+                        <a href="https://www.accio.com/work/share/sMOaR5bzOO72" target="_blank" class="bg-brand-teal text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white hover:text-brand-navy transition-all whitespace-nowrap">
+                            Open Skill Demo
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 7: LESSONS LEARNED -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="7">
+                <div class="md:w-1/2 space-y-4 text-left">
+                    <span class="text-xs font-bold text-brand-gold uppercase tracking-wider block">Key Insights</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">AI Onboarding Analogy</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        AI is identical to onboarding a brand-new, highly intelligent employee. Maximize output quality through deliberate management strategies:
+                    </p>
+                </div>
+                <div class="md:w-1/2 space-y-3 text-left">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-brand-gold text-brand-navy flex items-center justify-center text-xs font-bold">1</span>
+                        <div>
+                            <span class="font-bold text-xs block text-slate-100">Explain Clearly</span>
+                            <span class="text-[11px] text-slate-400">Establish structural borders and detailed constraints.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-brand-gold text-brand-navy flex items-center justify-center text-xs font-bold">2</span>
+                        <div>
+                            <span class="font-bold text-xs block text-slate-100">Provide Examples</span>
+                            <span class="text-[11px] text-slate-400">Illustrate standard formats or desired B2B layouts.</span>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-4 flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-brand-gold text-brand-navy flex items-center justify-center text-xs font-bold">3</span>
+                        <div>
+                            <span class="font-bold text-xs block text-slate-100">Iterate & Refine</span>
+                            <span class="text-[11px] text-slate-400">Continuously evaluate and fine-tune output accuracy.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SLIDE 8: BLUEPRINT CONCLUSION -->
+            <div class="slide flex flex-col md:flex-row gap-8 items-center w-full" data-slide-index="8">
+                <div class="md:w-1/2 space-y-4 text-left">
+                    <span class="text-xs font-bold text-brand-orange uppercase tracking-wider block">Conclusion</span>
+                    <h2 class="font-serif text-2xl md:text-3xl font-bold">The No-Code B2B Sourcing Blueprint</h2>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        A structured summary for any non-technical business executive aiming to deploy complex digital operations:
+                    </p>
+                </div>
+                <div class="md:w-1/2 bg-white/5 rounded-2xl p-6 border border-white/10 text-left space-y-4">
+                    <div class="space-y-3 text-xs text-slate-300 relative pl-4 border-l border-brand-orange/30">
+                        <div>
+                            <strong>1. Define Outcomes:</strong> Establish the target presentation first.
+                        </div>
+                        <div>
+                            <strong>2. Deconstruct Pipeline:</strong> Separate the task into logic nodes.
+                        </div>
+                        <div>
+                            <strong>3. Deploy AI Agents:</strong> Let LLMs write specialized operations.
+                        </div>
+                        <div>
+                            <strong>4. Continuous Tests:</strong> Optimize citations and platform rules.
+                        </div>
+                    </div>
+                    <div class="pt-3 border-t border-white/10 text-[10px] text-slate-400 italic">
+                        "Your domain vision is the most valuable asset, not raw syntax expertise."
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SLIDE NAVIGATION FOOTER CONTROLS -->
+        <footer class="bg-white/5 border-t border-white/10 py-6 px-6 relative z-20">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <!-- Left Details -->
+                <div class="text-xs text-slate-400">
+                    Slide <span id="currentSlideNum" class="text-white font-bold">1</span> of <span class="text-slate-300">8</span>
+                </div>
+
+                <!-- Center: Navigation Buttons -->
+                <div class="flex items-center gap-4">
+                    <button onclick="prevSlide()" class="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-white hover:bg-brand-gold hover:text-brand-navy transition-all flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextSlide()" class="w-10 h-10 rounded-full bg-brand-gold text-brand-navy hover:bg-white transition-all flex items-center justify-center font-bold shadow-lg">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <!-- Right Tip -->
+                <div class="text-xs text-slate-400 hidden sm:flex items-center gap-1">
+                    <kbd class="bg-white/10 text-white px-1.5 py-0.5 rounded text-[10px]">Left/Right Arrows</kbd> to navigate
+                </div>
+            </div>
+        </footer>
+    </main>
+
+
+    <!-- JS CORE LOGIC FOR PRESENTATION ENGINE -->
+    <script>
+        // Global view states
+        let isSlideMode = false;
+        let currentSlideIndex = 1;
+        const totalSlides = 8;
+
+        // Initialize elements once DOM loads
+        document.addEventListener("DOMContentLoaded", () => {
+            // Render the Gauge Time Allocation Chart
+            initCharts();
+            // Calculate initial ROI values
+            updateROI();
+            // Keyboard listener for slideshow
+            document.addEventListener("keydown", handleKeydown);
+        });
+
+        // Toggle View Mode (Executive Portal vs horizontal slide deck)
+        function switchMode() {
+            isSlideMode = !isSlideMode;
+            
+            const dashboardView = document.getElementById("dashboardView");
+            const presentationView = document.getElementById("presentationView");
+            const toggleModeBtn = document.getElementById("toggleModeBtn");
+            const modeIcon = document.getElementById("modeIcon");
+            const modeText = document.getElementById("modeText");
+
+            if (isSlideMode) {
+                // Set into Presentation Slide Mode
+                dashboardView.classList.add("hidden");
+                presentationView.classList.remove("hidden");
+                presentationView.classList.add("flex");
+                
+                // Update toggle button aesthetics
+                modeText.innerText = "Switch to Executive Dashboard";
+                modeIcon.className = "fa-solid fa-table-columns";
+                toggleModeBtn.classList.remove("from-brand-accent", "to-brand-orange");
+                toggleModeBtn.classList.add("from-brand-teal", "to-brand-darkBlue");
+                
+                // Update slide viewer
+                showSlide(currentSlideIndex);
+            } else {
+                // Set back into Scrollable Portal Dashboard Mode
+                dashboardView.classList.remove("hidden");
+                presentationView.classList.add("hidden");
+                presentationView.classList.remove("flex");
+
+                // Update toggle button aesthetics
+                modeText.innerText = "Switch to Presentation Slides";
+                modeIcon.className = "fa-solid fa-play-slide";
+                toggleModeBtn.classList.remove("from-brand-teal", "to-brand-darkBlue");
+                toggleModeBtn.classList.add("from-brand-accent", "to-brand-orange");
+            }
+        }
+
+        // Copy Master Sourcing Prompt (Dashboard)
+        function copyMasterPrompt() {
+            const promptText = document.getElementById("masterPromptText").innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const copyIcon = document.getElementById("copyIcon");
+                const copyText = document.getElementById("copyText");
+                
+                copyIcon.className = "fa-solid fa-check text-emerald-400";
+                copyText.innerText = "Copied!";
+                copyText.classList.add("text-emerald-400");
+                
+                setTimeout(() => {
+                    copyIcon.className = "fa-regular fa-copy";
+                    copyText.innerText = "Copy Prompt";
+                    copyText.classList.remove("text-emerald-400");
+                }, 2000);
+            });
+        }
+
+        // Toggle Slide 4 Master Prompt View
+        function toggleSlide4Prompt(show) {
+            const normalView = document.getElementById("slide4NormalView");
+            const promptView = document.getElementById("slide4PromptView");
+            
+            if (show) {
+                normalView.classList.add("hidden");
+                promptView.classList.remove("hidden");
+                promptView.classList.add("flex");
+            } else {
+                normalView.classList.remove("hidden");
+                promptView.classList.add("hidden");
+                promptView.classList.remove("flex");
+            }
+        }
+
+        // Copy Master Sourcing Prompt (Slide 4)
+        function copySlide4Prompt() {
+            const promptText = document.getElementById("slide4PromptText").innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const copyIcon = document.getElementById("copySlide4Icon");
+                const copyText = document.getElementById("copySlide4Text");
+                
+                copyIcon.className = "fa-solid fa-check text-emerald-400";
+                copyText.innerText = "Copied!";
+                copyText.classList.add("text-emerald-400");
+                
+                setTimeout(() => {
+                    copyIcon.className = "fa-regular fa-copy";
+                    copyText.innerText = "Copy";
+                    copyText.classList.remove("text-emerald-400");
+                }, 2000);
+            });
+        }
+
+        // Copy HTML Generator Prompt (Dashboard)
+        function copyHTMLPrompt() {
+            const promptText = document.getElementById("htmlPromptText").innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const copyIcon = document.getElementById("copyHTMLIcon");
+                const copyText = document.getElementById("copyHTMLText");
+                
+                copyIcon.className = "fa-solid fa-check text-emerald-400";
+                copyText.innerText = "Copied!";
+                copyText.classList.add("text-emerald-400");
+                
+                setTimeout(() => {
+                    copyIcon.className = "fa-regular fa-copy";
+                    copyText.innerText = "Copy Prompt";
+                    copyText.classList.remove("text-emerald-400");
+                }, 2000);
+            });
+        }
+
+        // Toggle Slide 5 HTML Prompt View
+        function toggleSlide5Prompt(show) {
+            const normalView = document.getElementById("slide5NormalView");
+            const promptView = document.getElementById("slide5PromptView");
+            
+            if (show) {
+                normalView.classList.add("hidden");
+                promptView.classList.remove("hidden");
+                promptView.classList.add("flex");
+            } else {
+                normalView.classList.remove("hidden");
+                promptView.classList.add("hidden");
+                promptView.classList.remove("flex");
+            }
+        }
+
+        // Copy HTML Generator Prompt (Slide 5)
+        function copySlide5Prompt() {
+            const promptText = document.getElementById("slide5PromptText").innerText;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const copyIcon = document.getElementById("copySlide5Icon");
+                const copyText = document.getElementById("copySlide5Text");
+                
+                copyIcon.className = "fa-solid fa-check text-emerald-400";
+                copyText.innerText = "Copied!";
+                copyText.classList.add("text-emerald-400");
+                
+                setTimeout(() => {
+                    copyIcon.className = "fa-regular fa-copy";
+                    copyText.innerText = "Copy";
+                    copyText.classList.remove("text-emerald-400");
+                }, 2000);
+            });
+        }
+
+        // Slide Management
+        function showSlide(index) {
+            if (index < 1) index = 1;
+            if (index > totalSlides) index = totalSlides;
+            currentSlideIndex = index;
+
+            // Hide all slides
+            const slides = document.querySelectorAll(".slide");
+            slides.forEach(slide => slide.classList.remove("active"));
+
+            // Show current target slide
+            const activeSlide = document.querySelector(`.slide[data-slide-index="${currentSlideIndex}"]`);
+            if (activeSlide) {
+                activeSlide.classList.add("active");
+            }
+
+            // Update footer progress indices
+            document.getElementById("currentSlideNum").innerText = currentSlideIndex;
+            
+            // Update Top Mini Progress Bar
+            const percent = (currentSlideIndex / totalSlides) * 100;
+            document.getElementById("deckProgressBar").style.width = percent + "%";
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides) {
+                showSlide(currentSlideIndex + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 1) {
+                showSlide(currentSlideIndex - 1);
+            }
+        }
+
+        function handleKeydown(e) {
+            if (!isSlideMode) return;
+            if (e.key === "ArrowRight") {
+                nextSlide();
+            } else if (e.key === "ArrowLeft") {
+                prevSlide();
+            }
+        }
+
+        // ROI Calculator Calculator Logic
+        function updateROI() {
+            const reportCount = parseInt(document.getElementById("reportCount").value);
+            const hourlyRate = parseInt(document.getElementById("hourlyRate").value);
+
+            // Update text indicators
+            document.getElementById("reportCountVal").innerText = reportCount;
+            document.getElementById("hourlyRateVal").innerText = hourlyRate;
+
+            // Math model logic
+            const manualHoursPerReport = 1.5; // Average of 1-2 hours
+            const aiMinutesPerReport = 10; // ~10 minutes
+
+            const totalManualHours = reportCount * manualHoursPerReport;
+            const totalAiHours = Math.ceil((reportCount * aiMinutesPerReport) / 60);
+            const totalSavedHours = totalManualHours - totalAiHours;
+            const totalSavedValue = totalSavedHours * hourlyRate;
+            const creditsConsumed = reportCount * 40; // Median credit consumption (30-50)
+
+            // Update UI elements
+            document.getElementById("manualHours").innerText = totalManualHours;
+            document.getElementById("aiHours").innerText = totalAiHours;
+            document.getElementById("savedHours").innerText = totalSavedHours;
+            document.getElementById("savedValue").innerText = totalSavedValue;
+            document.getElementById("creditEstimate").innerText = creditsConsumed;
+        }
+
+        // ChartJS Initializer
+        function initCharts() {
+            const ctx = document.getElementById('timeCompareChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Manual Workflow', 'Accio AI Skill'],
+                    datasets: [{
+                        data: [90,10], // Percentage-based mock representation of hours compared
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.85)', // Coral/red for manual pain points
+                            'rgba(16, 185, 129, 0.85)' // Emerald for AI skill
+                        ],
+                        borderColor: [
+                            '#FFFFFF',
+                            '#FFFFFF'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    if(context.label === 'Manual Workflow') {
+                                        return ' Manual Workflow: 1-2 Hours';
+                                    } else {
+                                        return ' Accio AI Skill: ~10 Minutes';
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    </script>
+</body>
+</html>
